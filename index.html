@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GE TalentMap Pro | Unified Profile View</title>
+<style>
+:root {
+    --bg: #050714; --card: #0f1229; --accent: #00d4ff; --text: #ffffff; --text-dim: rgba(255, 255, 255, 0.5);
+    --csuite: #00d4ff; --vp: #ff6b9d; --mgr: #a78bfa; --ic: #34d399;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter', sans-serif;}
+body{background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column;}
+
+/* --- HEADER --- */
+.hdr{background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; z-index: 1000;}
+.hdr-brand{display: flex; align-items: center; gap: 15px;}
+.logo{width: 40px; height: 40px; background: linear-gradient(135deg, #00d4ff, #0055ff); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: 0 0 15px rgba(0,212,255,0.3);}
+.stats-row { display: flex; gap: 25px; margin-left: 30px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 30px; }
+.stat-val { font-size: 18px; font-weight: 800; color: var(--accent); }
+.stat-lbl { font-size: 8px; text-transform: uppercase; color: var(--text-dim); }
+
+/* --- SIDEBAR --- */
+.main{display: flex; flex: 1; overflow: hidden;}
+.sidebar{width: 320px; background: rgba(0,0,0,0.3); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column;}
+.sb-list{flex: 1; overflow-y: auto; padding: 20px;}
+.pcard{background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px; position: relative; transition: 0.2s;}
+.pcard:hover{border-color: var(--accent); background: rgba(255,255,255,0.05);}
+.pcard.active{border-left: 4px solid var(--accent); background: rgba(0,212,255,0.05);}
+.pcard-img{width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent);}
+.edit-btn{position: absolute; right: 10px; top: 10px; opacity: 0.3; font-size: 12px;}
+.pcard:hover .edit-btn{opacity: 1; color: var(--accent);}
+
+/* --- CANVAS & PROFILE VIEW --- */
+.canvas-wrapper { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.canvas{ flex: 1; position: relative; background-image: radial-gradient(rgba(0,212,255,0.1) 1px, transparent 1px); background-size: 40px 40px;}
+#mapContainer{position: absolute; transform-origin: 0 0; cursor: grab;}
+#svgLines{position: absolute; pointer-events: none; width: 10000px; height: 5000px;}
+.mnode{position: absolute; transform: translate(-50%, -50%); z-index: 10;}
+.nbox{background: rgba(10, 15, 40, 0.95); border: 2px solid var(--accent); padding: 15px; border-radius: 15px; min-width: 180px; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
+
+/* --- NEW PROFILE HEADER INSIDE HISTORY --- */
+#tlView { display:none; padding: 40px; overflow-y: auto; height: 100%; background: var(--bg); }
+.profile-header { display: flex; align-items: center; gap: 25px; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); max-width: 800px; margin-left: auto; margin-right: auto; }
+.profile-lg-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; box-shadow: 0 0 20px var(--accent); }
+.profile-info h1 { font-size: 32px; color: #fff; margin-bottom: 5px; }
+.profile-info p { color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+
+.tl-container { max-width: 800px; margin: 0 auto; }
+.tl-item { border-left: 2px solid var(--accent); padding: 0 0 30px 30px; position: relative; }
+.tl-item::before { content:''; position: absolute; left: -9px; top: 0; width: 16px; height: 16px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
+
+/* --- MODALS --- */
+.moverlay{position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px);}
+.mbox{background: #0f173d; padding: 30px; border-radius: 20px; width: 500px; border: 1px solid var(--accent); max-height: 90vh; overflow-y: auto;}
+.fi, .fsel{width: 100%; padding: 10px; margin-bottom: 12px; background: #050714; border: 1px solid #1a204d; color: #fff; border-radius: 8px; outline: none;}
+.btn{padding: 10px 20px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s;}
+.btn-primary{background: linear-gradient(135deg, #00d4ff, #0055ff); color: #fff;}
+.btn-ghost{background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="logo">CP</div>
+    <div class="stats-row">
+        <div class="stat-item"><div class="stat-val" id="ST_L">0</div><div class="stat-lbl">Leaders</div></div>
+        <div class="stat-item"><div class="stat-val" id="ST_R">0</div><div class="stat-lbl">Total Roles</div></div>
+    </div>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button class="btn btn-ghost" onclick="exportJSON()">📤 Export</button>
+    <button class="btn btn-ghost" onclick="importJSON()">📥 Import</button>
+    <button class="btn btn-primary" onclick="openLeaderModal()">+ Add New Leader</button>
+  </div>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="sb-list">
+        <div class="pcard" onclick="viewAll()" id="ALL_BTN"><strong>🌍 View Global Map</strong></div>
+        <div id="SBLIST" style="margin-top: 15px;"></div>
+    </div>
+  </aside>
+
+  <section class="canvas-wrapper">
+    <div style="background:rgba(0,0,0,0.3); padding:10px 30px; display:flex; gap:15px; z-index:10;">
+        <button class="btn btn-ghost" id="TAB_MAP" style="font-size:11px;" onclick="switchView('map')">Map View</button>
+        <button class="btn btn-ghost" id="TAB_TL" style="font-size:11px;" onclick="switchView('timeline')">Profile & History</button>
+    </div>
+    
+    <div id="mapWrap" class="canvas">
+      <div id="mapContainer">
+        <svg id="svgLines"></svg>
+        <div id="nodesEl"></div>
+      </div>
+    </div>
+
+    <div id="tlView">
+        <div id="TL_PROFILE_AREA"></div>
+        <div class="tl-container" id="TL_INNER"></div>
+    </div>
+  </section>
+</div>
+
+<div id="MOD_LEADER" class="moverlay">
+  <div class="mbox">
+    <h2 id="M_TITLE" style="color:var(--accent); margin-bottom:20px;">Register Leader</h2>
+    <div style="font-size:10px; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">Profile Info</div>
+    <input type="text" id="L_NAME" class="fi" placeholder="Full Name">
+    <input type="text" id="L_IMG" class="fi" placeholder="Photo URL (LinkedIn Link)">
+    <input type="hidden" id="L_ID" value="">
+
+    <div style="font-size:10px; text-transform:uppercase; color:var(--accent); margin:20px 0 10px;">Quick Add Career Role</div>
+    <input type="text" id="R_TITLE" class="fi" placeholder="Job Title">
+    <input type="text" id="R_CO" class="fi" placeholder="Company">
+    <div style="display:flex; gap:10px;">
+        <input type="number" id="R_YR" class="fi" value="2026">
+        <select id="R_LVL" class="fsel">
+            <option value="1">Individual Contributor</option>
+            <option value="3">Manager / Lead</option>
+            <option value="4">Director / VP</option>
+            <option value="5">C-Suite / Executive</option>
+        </select>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveAll()">Save Profile</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem('talent_unified_db')) || [];
+let selId = null, isGlobal = false, currentView = 'map';
+const LVL_Y = { "1": 700, "3": 500, "4": 300, "5": 100 };
+const LVL_C = { "1": "#34d399", "3": "#a78bfa", "4": "#ff6b9d", "5": "#00d4ff" };
+
+/* --- APP LOGIC --- */
+function sync() {
+    localStorage.setItem('talent_unified_db', JSON.stringify(data));
+    updateStats();
+    renderSidebar();
+}
+
+function updateStats() {
+    document.getElementById('ST_L').innerText = data.length;
+    let rCount = 0; data.forEach(l => rCount += l.roles.length);
+    document.getElementById('ST_R').innerText = rCount;
+}
+
+function openLeaderModal(editId = null) {
+    closeModals();
+    document.getElementById('MOD_LEADER').style.display = 'flex';
+    if(editId) {
+        const l = data.find(x => x.id == editId);
+        document.getElementById('M_TITLE').innerText = "Edit Leader Profile";
+        document.getElementById('L_NAME').value = l.name;
+        document.getElementById('L_IMG').value = l.img || "";
+        document.getElementById('L_ID').value = l.id;
+    }
+}
+
+function closeModals() {
+    document.querySelectorAll('.moverlay').forEach(m => m.style.display = 'none');
+    document.getElementById('L_NAME').value = ""; document.getElementById('L_IMG').value = "";
+    document.getElementById('R_TITLE').value = ""; document.getElementById('R_CO').value = "";
+    document.getElementById('L_ID').value = "";
+}
+
+function saveAll() {
+    const name = document.getElementById('L_NAME').value, img = document.getElementById('L_IMG').value, lId = document.getElementById('L_ID').value;
+    if(!name) return alert("Name is required");
+
+    let leader;
+    if(lId) {
+        leader = data.find(x => x.id == lId);
+        leader.name = name; leader.img = img;
+    } else {
+        leader = { id: Date.now(), name, img, roles: [] };
+        data.push(leader);
+    }
+
+    const rTitle = document.getElementById('R_TITLE').value;
+    if(rTitle) {
+        leader.roles.push({
+            title: rTitle, company: document.getElementById('R_CO').value || "Company",
+            year: parseInt(document.getElementById('R_YR').value), level: document.getElementById('R_LVL').value
+        });
+    }
+    leader.roles.sort((a,b) => a.year - b.year);
+    sync(); closeModals(); selectLeader(leader.id);
+}
+
+/* --- VIEW CONTROLLER --- */
+function switchView(v) {
+    currentView = v;
+    document.getElementById('mapWrap').style.display = v === 'map' ? 'block' : 'none';
+    document.getElementById('tlView').style.display = v === 'timeline' ? 'block' : 'none';
+    
+    // Highlight tabs
+    document.getElementById('TAB_MAP').classList.toggle('btn-primary', v === 'map');
+    document.getElementById('TAB_TL').classList.toggle('btn-primary', v === 'timeline');
+    
+    refresh();
+}
+
+function selectLeader(id) {
+    isGlobal = false; selId = id;
+    // Auto-switch to Timeline to show the new Profile + History view
+    switchView('timeline');
+}
+
+function viewAll() { isGlobal = true; selId = null; switchView('map'); }
+
+function refresh() {
+    if(currentView === 'timeline') renderProfileAndHistory();
+    else { if(isGlobal) renderGlobal(); else renderSingle(); }
+    renderSidebar();
+}
+
+/* --- THE NEW UNIFIED PROFILE & HISTORY VIEW --- */
+function renderProfileAndHistory() {
+    const profileArea = document.getElementById('TL_PROFILE_AREA');
+    const historyArea = document.getElementById('TL_INNER');
+    const leader = data.find(l => l.id == selId);
+    
+    if(!leader) {
+        profileArea.innerHTML = "";
+        historyArea.innerHTML = "<h3 style='color:var(--text-dim); text-align:center; margin-top:50px;'>Select a leader to view their profile.</h3>";
+        return;
+    }
+
+    // Profile Header
+    profileArea.innerHTML = `
+        <div class="profile-header">
+            <img class="profile-lg-img" src="${leader.img || 'https://ui-avatars.com/api/?name='+leader.name+'&background=random&size=200'}">
+            <div class="profile-info">
+                <h1>${leader.name}</h1>
+                <p>${leader.roles.length} Career Milestones Registered</p>
+                <button class="btn btn-ghost" style="margin-top:10px; font-size:10px;" onclick="openLeaderModal(${leader.id})">✎ Edit Profile</button>
+            </div>
+        </div>
+    `;
+
+    // History Flow
+    historyArea.innerHTML = [...leader.roles].sort((a,b) => b.year - a.year).map(r => `
+        <div class="tl-item">
+            <div style="color:var(--accent); font-weight:800; font-size:12px;">${r.year}</div>
+            <div style="font-size:18px; font-weight:700; margin:4px 0;">${r.title}</div>
+            <div style="color:var(--text-dim)">${r.company}</div>
+        </div>
+    `).join('');
+}
+
+/* --- MAP RENDERERS --- */
+function renderSingle() {
+    const l = data.find(x => x.id == selId);
+    if(l) drawPath(l, 0, "#00d4ff");
+}
+
+function renderGlobal() {
+    const nodes = document.getElementById('nodesEl'), svg = document.getElementById('svgLines');
+    nodes.innerHTML = ""; svg.innerHTML = "";
+    data.forEach((l, i) => drawPath(l, i * 650, `hsl(${(i*100)%360}, 70%, 60%)`, true));
+}
+
+function drawPath(l, offset, color, showTag = false) {
+    const nodes = document.getElementById('nodesEl'), svg = document.getElementById('svgLines');
+    if(!isGlobal) { nodes.innerHTML = ""; svg.innerHTML = ""; }
+    const sorted = [...l.roles].sort((a,b) => a.year - b.year);
+    let pathD = "";
+
+    sorted.forEach((r, i) => {
+        const x = 200 + (i * 350), y = LVL_Y[r.level] + offset;
+        const node = document.createElement('div');
+        node.className = 'mnode';
+        node.style.left = x + 'px'; node.style.top = y + 'px';
+        node.innerHTML = `<div class="nbox" style="border-color:${LVL_C[r.level]}">
+            <div style="color:var(--accent); font-size:10px; font-weight:800;">${r.year}</div>
+            <div style="font-weight:700;">${r.title}</div>
+            <div style="font-size:11px; color:var(--text-dim);">${r.company}</div>
+            ${showTag ? `<div style="font-size:9px; color:${color}; margin-top:8px; font-weight:800;">${l.name}</div>` : ''}
+            <button onclick="deleteRole(${l.id}, ${i})" style="position:absolute; top:5px; right:5px; background:none; border:none; color:red; cursor:pointer; font-size:10px;">✕</button>
+        </div>`;
+        node.onclick = (e) => { e.stopPropagation(); openLeaderModal(l.id); };
+        nodes.appendChild(node);
+        if(i === 0) pathD += `M ${x} ${y}`;
+        else {
+            const px = 200 + ((i-1) * 350), py = LVL_Y[sorted[i-1].level] + offset;
+            pathD += ` C ${px + 175} ${py}, ${x - 175} ${y}, ${x} ${y}`;
+        }
+    });
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    p.setAttribute("d", pathD); p.setAttribute("stroke", color); p.setAttribute("stroke-width", "3"); p.setAttribute("fill", "none"); p.setAttribute("opacity", "0.4");
+    svg.appendChild(p);
+}
+
+function renderSidebar() {
+    const list = document.getElementById('SBLIST');
+    document.getElementById('ALL_BTN').classList.toggle('active', isGlobal);
+    list.innerHTML = data.map(l => `
+        <div class="pcard ${selId == l.id ? 'active' : ''}" onclick="selectLeader(${l.id})">
+            <img class="pcard-img" src="${l.img || 'https://ui-avatars.com/api/?name='+l.name+'&background=random'}">
+            <div style="flex:1">
+                <div style="font-size:13px; font-weight:700;">${l.name}</div>
+                <div style="font-size:10px; color:var(--accent)">${l.roles.length} Milestones</div>
+            </div>
+            <div class="edit-btn" onclick="event.stopPropagation(); openLeaderModal(${l.id})">✎</div>
+        </div>
+    `).join('');
+}
+
+function deleteRole(lId, idx) {
+    event.stopPropagation();
+    const l = data.find(x => x.id == lId);
+    if(confirm("Delete this milestone?")) { l.roles.splice(idx, 1); sync(); refresh(); }
+}
+
+/* --- SYSTEM UTILS --- */
+let scale = 0.7, px = 150, py = 80, isD = false, sx, sy;
+const wrap = document.getElementById('mapWrap'), cont = document.getElementById('mapContainer');
+wrap.onwheel = (e) => { e.preventDefault(); scale += e.deltaY * -0.0008; scale = Math.min(Math.max(0.1, scale), 2); up(); };
+wrap.onmousedown = (e) => { isD = true; sx = e.pageX - px; sy = e.pageY - py; };
+window.onmousemove = (e) => { if(!isD) return; px = e.pageX - sx; py = e.pageY - sy; up(); };
+window.onmouseup = () => isD = false;
+function up() { cont.style.transform = `translate(${px}px, ${py}px) scale(${scale})`; }
+
+function exportJSON() {
+    const b = new Blob([JSON.stringify(data)], {type: 'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'talent_map.json'; a.click();
+}
+function importJSON() {
+    const i = document.createElement('input'); i.type = 'file';
+    i.onchange = e => {
+        const r = new FileReader(); r.readAsText(e.target.files[0]);
+        r.onload = ev => { data = JSON.parse(ev.target.result); sync(); location.reload(); };
+    };
+    i.click();
+}
+
+sync(); switchView('timeline');
+</script>
+</body>
+</html>
