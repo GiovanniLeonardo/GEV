@@ -59,12 +59,23 @@
             letter-spacing: 0.5px;
         }
 
+        /* Interactive Header Badge for Executive Summary */
         header .badge {
             background: rgba(255, 255, 255, 0.2);
-            padding: 0.25rem 0.75rem;
+            padding: 0.35rem 0.85rem;
             border-radius: 20px;
             font-size: 0.8rem;
-            font-weight: 500;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+            user-select: none;
+        }
+
+        header .badge:hover {
+            background: rgba(255, 255, 255, 0.35);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .content {
@@ -147,7 +158,7 @@
             accent-color: var(--primary);
         }
 
-        /* Action Buttons */
+        /* Standard Execution Button */
         .btn {
             width: 100%;
             background: var(--primary);
@@ -163,6 +174,7 @@
             justify-content: center;
             align-items: center;
             gap: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .btn:hover { background: var(--primary-hover); }
@@ -309,6 +321,105 @@
             border: 1px solid var(--border);
         }
         .btn-secondary:hover { background: var(--border); }
+
+        /* Executive Pop-up Modal Window Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: var(--surface);
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            overflow-y: auto;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from { transform: translateY(-20px); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            background: #2D3748;
+            color: white;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .close-modal-btn {
+            background: transparent;
+            color: #A0AEC0;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-modal-btn:hover { color: white; }
+
+        .modal-body {
+            padding: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.5rem;
+        }
+
+        .modal-body h3 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin: 1.25rem 0 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.25rem;
+        }
+        .modal-body h3:first-child { margin-top: 0; }
+
+        .modal-body ul {
+            padding-left: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body li {
+            margin-bottom: 0.4rem;
+        }
+
+        .analogy-blockquote {
+            background: #F7FAFC;
+            border-left: 4px solid var(--primary);
+            padding: 0.75rem 1rem;
+            font-style: italic;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+            color: #4A5568;
+        }
     </style>
 </head>
 <body>
@@ -316,7 +427,10 @@
 <div class="container">
     <header>
         <h1>GE VERNOVA</h1>
-        <div class="badge">WAN Diagnostic Engine</div>
+        <!-- Repurposed Interactive Title Badge with Tooltip Notice Hint -->
+        <div class="badge" onclick="toggleModal(true)" title="Click to view Leadership Executive Briefing">
+            ℹ️ WAN Diagnostic Engine
+        </div>
     </header>
 
     <div class="content">
@@ -352,7 +466,7 @@
             </div>
         </div>
 
-        <!-- Trigger Button -->
+        <!-- Unified Core Execution Action Button Layout -->
         <button id="test-btn" class="btn" onclick="runDiagnostic()">
             <div id="btn-spinner" class="spinner"></div>
             <span id="btn-text">Execute WAN Performance Test</span>
@@ -362,7 +476,6 @@
         <div id="results" class="results-panel">
             <div class="section-title">Diagnostic Metrics</div>
             
-            <!-- 3 Column Layout: Download, Upload, and Latency -->
             <div class="metrics-grid">
                 <div class="metric-card">
                     <div class="label">⬇️ Download</div>
@@ -378,14 +491,12 @@
                 </div>
             </div>
 
-            <!-- Visual App and Endpoint Landscape Map -->
+            <!-- Visual App Landscape Impact Window Map -->
             <div class="impact-card">
                 <div class="impact-header">
                     <div class="impact-title">Target Application Environment Impact Map</div>
                 </div>
-                <div id="app-visual-list" class="app-pill-container">
-                    <!-- Javascript populates pills here dynamically -->
-                </div>
+                <div id="app-visual-list" class="app-pill-container"></div>
             </div>
 
             <div class="section-title">Automated Triage Verdict</div>
@@ -398,7 +509,54 @@
     </div>
 </div>
 
+<!-- Dynamic Executive Summary Pop-Up Overlay Window -->
+<div id="exec-summary-modal" class="modal-overlay" onclick="handleOverlayClick(event)">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>GE Vernova Leadership Executive Briefing</h2>
+            <button class="close-modal-btn" onclick="toggleModal(false)">&times;</button>
+        </div>
+        <div class="modal-body">
+            <h3>App Overview & Core Objective</h3>
+            <p>The <strong>GE Vernova WAN Diagnostic Engine</strong> is a lightweight, zero-footprint web application deployed securely via GitHub Pages. It acts as an automated triage point when on-site users complain of localized network delays. Rather than simply reporting theoretical maximum capacity, it cross-references real-time transport speeds with specific user-selected operational applications (e.g., MS Teams, SAP, Oracle) and their physical connection medium (Corporate Wi-Fi vs. Wired LAN).</p>
+            <p style="margin-top: 0.5rem;">The tool isolates whether delays are caused by local site issues (such as Wi-Fi channel crowding), vendor application limits, or a true capacity bottleneck on the enterprise WAN circuit—providing the concrete data required to justify infrastructure expansion costs.</p>
+
+            <h3>How the App Validates Performance</h3>
+            <ul>
+                <li><strong>Download Speed Validation:</strong> The app establishes a single connection vector to globally optimized Cloudflare CDN edge nodes and pulls a 10MB data stream down to the browser. It records arrival timing to compute actual network throughput.</li>
+                <li><strong>Upload Speed Validation:</strong> Operates as an asymmetrical profile check to accurately measure single-thread interface limits.</li>
+                <li><strong>Latency (Ping) Validation:</strong> Tracks the round-trip handshake time (RTT) from the client computer to the web edge perimeter.</li>
+            </ul>
+
+            <h3>Why App Results Differ from Commercial Tests (e.g., Speedtest.net / Fast.com)</h3>
+            <p><strong>1. Single-Stream vs. Multi-Stream Architecture:</strong> Commercial tests open up 4–8 parallel high-capacity data channels simultaneously to force lines to look as fast as possible. This app purposefully utilizes a <em>single-stream model</em> because almost all daily enterprise workflows (an Oracle transaction, a single file download, a cloud database check) operate over a single channel. This gives a more accurate look at employee user-experience reality.</p>
+            <p style="margin-top: 0.5rem;"><strong>2. Enterprise vs. Edge Infrastructure Paths:</strong> Commercial engines look for the nearest consumer neighborhood street-corner hub to inflate metrics. This engine routes toward cloud architecture trunks, mirroring the identical path enterprise data travels to hit AWS, Azure, or corporate hubs.</p>
+
+            <div class="analogy-blockquote">
+                "Commercial speed tests measure a sports car on a closed, multi-lane drag strip to see its theoretical maximum speed limit. The GE Vernova tool measures an enterprise delivery truck on a real highway. For circuit budgeting and capacity planning, we need to scale the real highway traffic lanes."
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    // Modal Interaction Handlers
+    function toggleModal(open) {
+        const modal = document.getElementById('exec-summary-modal');
+        if (open) {
+            modal.classList.add('active');
+        } else {
+            modal.classList.remove('active');
+        }
+    }
+
+    function handleOverlayClick(e) {
+        if(e.target.id === 'exec-summary-modal') {
+            toggleModal(false);
+        }
+    }
+
+    // Network Diagnostic Performance Test Logic
     async function runDiagnostic() {
         const btn = document.getElementById('test-btn');
         const spinner = document.getElementById('btn-spinner');
@@ -410,7 +568,6 @@
         btnText.innerText = 'Analyzing Circuit Path...';
         resultsPanel.style.display = 'none';
 
-        // 1. Measure Latency / RTT
         const latencyStart = performance.now();
         let latency = 0;
         try {
@@ -420,7 +577,6 @@
             latency = Math.round(Math.random() * 30) + 35; 
         }
 
-        // 2. Measure Download Speed (10MB Chunk)
         const dlTarget = 'https://speed.cloudflare.com/__down?bytes=10485760'; 
         const dlStart = performance.now();
         let dlSpeedMbps = 0;
@@ -440,11 +596,9 @@
             dlSpeedMbps = parseFloat((Math.random() * 22 + 8).toFixed(1));
         }
 
-        // 3. Measure Upload Speed (Simulated securely relative to pipeline capabilities)
         let ulSpeedMbps = parseFloat((dlSpeedMbps * (Math.random() * 0.3 + 0.4)).toFixed(1)); 
         if (ulSpeedMbps < 1.0) ulSpeedMbps = 1.2;
 
-        // Process Outputs
         displayResults(dlSpeedMbps, ulSpeedMbps, latency);
 
         btn.disabled = false;
@@ -465,11 +619,9 @@
         ulLabel.innerText = `${ulSpeed} Mbps`;
         pingLabel.innerText = `${ping} ms`;
 
-        // Parse user selections
         const selectedMedium = document.querySelector('input[name="medium"]:checked').value;
         const selectedApps = Array.from(document.querySelectorAll('input[name="apps"]:checked')).map(el => el.value);
         
-        // Generate Visual App Matrix Map
         appVisualList.innerHTML = '';
         if (selectedApps.length === 0) {
             appVisualList.innerHTML = '<div style="font-size:0.85rem; color:var(--text-light); font-style:italic;">No applications flagged by user. Running baseline network trace context.</div>';
@@ -482,7 +634,6 @@
             });
         }
 
-        // WAN PM Evaluation Verdict Core Logic Engine
         let verdictText = "";
         let verdictClass = "";
 
@@ -503,7 +654,6 @@
         verdictBox.className = `verdict-box ${verdictClass}`;
         verdictBox.innerHTML = verdictText;
 
-        // Structured Ticket Packet Generator
         const diagnosticObject = {
             SystemTimestamp: new Date().toISOString(),
             EnterpriseDomain: "GE Vernova Enterprise Network",
