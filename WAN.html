@@ -6,15 +6,15 @@
     <title>GE Vernova Enterprise Network Diagnostic</title>
     <style>
         :root {
-            --primary: #005A9C;     /* Industrial Corporate Blue */
-            --primary-hover: #004475;
-            --bg: #F4F6F9;          /* Light Slate Background */
+            --primary: #005E60;     /* GE Vernova Official Evergreen */
+            --primary-hover: #004648;
+            --bg: #F0F5F5;          /* Harmonized Soft Greenish-Grey Slate */
             --surface: #FFFFFF;
-            --text: #2D3748;
-            --text-light: #718096;
-            --border: #E2E8F0;
+            --text: #1A2424;
+            --text-light: #5A6E6E;
+            --border: #D1DEDE;
             --accent-warn: #DD6B20;
-            --accent-success: #38A169;
+            --accent-success: #005E60;
         }
 
         * {
@@ -39,7 +39,7 @@
             width: 100%;
             background: var(--surface);
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 25px rgba(0, 94, 96, 0.06);
             border: 1px solid var(--border);
             overflow: hidden;
         }
@@ -61,20 +61,20 @@
 
         /* Interactive Header Badge for Executive Summary */
         header .badge {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
             padding: 0.35rem 0.85rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             transition: all 0.2s ease-in-out;
             user-select: none;
         }
 
         header .badge:hover {
-            background: rgba(255, 255, 255, 0.35);
-            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
@@ -122,8 +122,9 @@
 
         .radio-group input[type="radio"]:checked + .radio-label {
             border-color: var(--primary);
-            background: rgba(0, 90, 156, 0.05);
+            background: rgba(0, 94, 96, 0.05);
             color: var(--primary);
+            font-weight: 600;
         }
 
         /* Checkbox Options Grid */
@@ -149,7 +150,7 @@
         }
 
         .checkbox-label:hover {
-            background: #F8FAFC;
+            background: #F4F8F8;
         }
 
         .checkbox-label input {
@@ -208,7 +209,7 @@
         }
 
         .metric-card {
-            background: #F8FAFC;
+            background: #F4F8F8;
             border: 1px solid var(--border);
             padding: 1rem 0.5rem;
             border-radius: 8px;
@@ -232,7 +233,7 @@
 
         /* Visual App / Impact Display Card */
         .impact-card {
-            background: #F8FAFC;
+            background: #F4F8F8;
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 1.25rem;
@@ -263,8 +264,8 @@
         }
 
         .app-pill {
-            background: #EDF2F7;
-            color: #4A5568;
+            background: #E2ECEC;
+            color: #3A4A4A;
             padding: 0.35rem 0.75rem;
             border-radius: 15px;
             font-size: 0.85rem;
@@ -297,14 +298,14 @@
         }
 
         .verdict-box.success {
-            background: #F0FFF4;
+            background: #E6F2F2;
             border-left-color: var(--accent-success);
-            color: #22543D;
+            color: #004648;
         }
 
         .payload-box {
-            background: #2D3748;
-            color: #EDF2F7;
+            background: #253333;
+            color: #EBF2F2;
             padding: 1rem;
             border-radius: 6px;
             font-family: monospace;
@@ -316,7 +317,7 @@
         }
 
         .btn-secondary {
-            background: #EDF2F7;
+            background: #E2ECEC;
             color: var(--text);
             border: 1px solid var(--border);
         }
@@ -329,7 +330,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(15, 30, 30, 0.6);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -351,7 +352,7 @@
             width: 100%;
             max-height: 85vh;
             border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            box-shadow: 0 10px 30px rgba(0,70,72,0.2);
             overflow-y: auto;
             animation: modalSlide 0.3s ease;
         }
@@ -362,7 +363,7 @@
         }
 
         .modal-header {
-            background: #2D3748;
+            background: var(--primary);
             color: white;
             padding: 1.25rem 1.5rem;
             display: flex;
@@ -379,7 +380,7 @@
 
         .close-modal-btn {
             background: transparent;
-            color: #A0AEC0;
+            color: rgba(255,255,255,0.7);
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
@@ -412,13 +413,13 @@
         }
 
         .analogy-blockquote {
-            background: #F7FAFC;
+            background: #F4F8F8;
             border-left: 4px solid var(--primary);
             padding: 0.75rem 1rem;
             font-style: italic;
             margin: 1rem 0;
             border-radius: 0 6px 6px 0;
-            color: #4A5568;
+            color: #3A4A4A;
         }
     </style>
 </head>
@@ -427,7 +428,7 @@
 <div class="container">
     <header>
         <h1>GE VERNOVA</h1>
-        <!-- Repurposed Interactive Title Badge with Tooltip Notice Hint -->
+        <!-- Interactive Title Badge with Tooltip Notice Hint -->
         <div class="badge" onclick="toggleModal(true)" title="Click to view Leadership Executive Briefing">
             ℹ️ WAN Diagnostic Engine
         </div>
